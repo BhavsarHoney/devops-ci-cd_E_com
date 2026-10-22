@@ -1,0 +1,102 @@
+
+name: E-Commerce CI
+
+on:
+  # push:
+  #   branches: [main]
+  # pull_request:
+  #   branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ==========================================
+  # JOB 1: JAVA BACKEND
+  # ==========================================
+  backend:
+    name: Build Java Backend
+    runs-on: company-java-runners
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Java and Maven
+        run: |
+          java -version
+          mvn -version
+
+      - name: Build and test with Maven
+        working-directory: E-Commerce_Backend
+        run: ./mvnw -B verify
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        # if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./E-Commerce_Backend
+          file: ./E-Commerce_Backend/Dockerfile
+          # push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/e-commerce-backend:${{github.sha}}
+            ${{ secrets.DOCKER_USERNAME }}/e-commerce-backend:latest
+
+  # ==========================================
+  # JOB 2: REACT FRONTEND
+  # ==========================================
+  frontend:
+    name: Build React Frontend
+    runs-on: company-eks-runners
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Node.js and npm
+        run: |
+          node --version
+          npm --version
+
+      - name: Install frontend dependencies
+        working-directory: E-Commerce_Frontend
+        run: npm ci
+
+      - name: Test frontend
+        working-directory: E-Commerce_Frontend
+        run: CI=true npm test -- --watchAll=false
+
+      - name: Build React application
+        working-directory: E-Commerce_Frontend
+        run: npm run build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        # if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./E-Commerce_Frontend
+          file: ./E-Commerce_Frontend/Dockerfile
+          # push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/e-commerce-frontend:${{github.sha}}
+            ${{ secrets.DOCKER_USERNAME }}/e-commerce-frontend:latest
+    
