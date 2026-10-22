@@ -39,8 +39,8 @@ jobs:
         # if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: hanibhavsar
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Build and push backend image
         uses: docker/build-push-action@v6
@@ -49,8 +49,8 @@ jobs:
           file: ./E-Commerce_Backend/Dockerfile
           # push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/e-commerce-backend:${{github.sha}}
-            ${{ secrets.DOCKER_USERNAME }}/e-commerce-backend:latest
+             hanibhavsar/e-commerce-backend:${{github.sha}}
+             hanibhavsar/e-commerce-backend:latest
 
   # ==========================================
   # JOB 2: REACT FRONTEND
@@ -87,7 +87,7 @@ jobs:
         # if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: hanibhavsar
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Build and push frontend image
@@ -97,6 +97,6 @@ jobs:
           file: ./E-Commerce_Frontend/Dockerfile
           # push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/e-commerce-frontend:${{github.sha}}
-            ${{ secrets.DOCKER_USERNAME }}/e-commerce-frontend:latest
+             hanibhavsar/e-commerce-frontend:${{github.sha}}
+             hanibhavsar/e-commerce-frontend:latest
     
